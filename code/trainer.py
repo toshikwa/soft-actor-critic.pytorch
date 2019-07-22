@@ -31,10 +31,13 @@ class Trainer():
             self.env.observation_space, self.env.action_space, args)
 
         # logdir
-        today = datetime.datetime.now().strftime("%Y%m%d")
-        self.logdir = os.path.join(
-            HOME_DIR, 'logs', args.env_name,
-            today, args.tag)
+        if args.logdir == "":
+            today = datetime.datetime.now().strftime("%Y%m%d")
+            self.logdir = os.path.join(
+                HOME_DIR, 'logs', args.env_name,
+                today, args.tag)
+        else:
+            self.logdir = args.logdir
 
         if not os.path.exists(self.logdir):
             os.makedirs(self.logdir)
@@ -174,6 +177,16 @@ class Trainer():
 
         self.agent.save_model(
             os.path.join(self.logdir, "model"))
+
+    def test(self):
+        self.agent.load_model(os.path.join(self.logdir, "model"))
+        state = self.env.reset()
+        done = False
+        while not done:
+            self.env.render()
+            action = self.agent.select_action(state, eval=True)
+            next_state, _, done, _ = self.env.step(action)
+            state = next_state
 
     def __del__(self):
         self.env.close()
