@@ -2,7 +2,6 @@ import os
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam
-from utils import soft_update, hard_update
 from model import GaussianPolicy, QNetwork
 
 
@@ -34,7 +33,7 @@ class SAC(object):
         # optimizer
         self.critic_optim = Adam(self.critic.parameters(), lr=args.lr)
         # copy parameters to the target network
-        hard_update(self.critic_target, self.critic)
+        self.hard_update()
 
         # ---- entropy ---- #
         if self.automatic_entropy_tuning is True:
@@ -134,10 +133,21 @@ class SAC(object):
             alpha_tlogs = torch.tensor(self.alpha)
 
         if updates % self.target_update_interval == 0:
-            soft_update(self.critic_target, self.critic, self.tau)
+            self.soft_update()
 
         return qf1_loss.item(), qf2_loss.item(), policy_loss.item(),\
             alpha_loss.item(), alpha_tlogs.item()
+
+    def soft_update(self):
+        for target, source in zip(
+                self.critic_target.parameters(), self.critic.parameters()):
+            target.data.copy_(
+                target.data * (1.0 - self.tau) + source.data * self.tau)
+
+    def hard_update(self):
+        for target, source in zip(
+                self.critic_target.parameters(), self.critic.parameters()):
+            target.data.copy_(source.data)
 
     # save model parameters
     def save_model(self, save_dir):
