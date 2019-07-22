@@ -10,7 +10,7 @@ def get_config():
                         help='name of the trial')
     parser.add_argument('-v', '--vis', action="store_true",
                         help='if render or not')
-    parser.add_argument('--eval_per_steps', type=int, default=1000,
+    parser.add_argument('--eval_per_steps', type=int, default=10000,
                         help='evaluate per steps')
     parser.add_argument('--gamma', type=float, default=0.95, metavar='G',
                         help='discount factor for the reward')

@@ -90,8 +90,10 @@ class GaussianPolicy(nn.Module):
             self.action_scale = 1.
             self.action_bias = 0.
         else:
-            self.action_scale = (action_space.high - action_space.low) / 2.
-            self.action_bias = (action_space.high + action_space.low) / 2.
+            self.action_scale = torch.FloatTensor(
+                (action_space.high - action_space.low) / 2.)
+            self.action_bias = torch.FloatTensor(
+                (action_space.high + action_space.low) / 2.)
 
     def forward(self, state):
         # pass forward
@@ -130,3 +132,8 @@ class GaussianPolicy(nn.Module):
 
     def load(self, path):
         self.load_state_dict(torch.load(path))
+
+    def to(self, device):
+        self.action_scale = self.action_scale.to(device)
+        self.action_bias = self.action_bias.to(device)
+        return super(GaussianPolicy, self).to(device)
