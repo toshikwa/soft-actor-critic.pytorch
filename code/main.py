@@ -16,4 +16,5 @@ def main(args):
 
 if __name__ == '__main__':
     args = get_config()
-    main(args)
+    print(args.automatic_entropy_tuning)
+    # main(args)

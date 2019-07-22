@@ -165,7 +165,7 @@ class Trainer():
         plot_return_history(
             self.mean_return_history, self.std_return_history,
             os.path.join(self.logdir, 'test_rewards.png'),
-            self.args.eval_per_steps)
+            self.args.env_name, self.args.eval_per_steps)
 
     def train(self):
         # iterate until convergence

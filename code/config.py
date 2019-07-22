@@ -3,7 +3,7 @@ import argparse
 
 def get_config():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env-name', type=str,
+    parser.add_argument('--env_name', type=str,
                         default="MountainCarContinuous-v0",
                         help='name of the environment to run')
     parser.add_argument('--tag', type=str, default="test",
@@ -21,7 +21,7 @@ def get_config():
     parser.add_argument('--alpha', type=float, default=0.2, metavar='G',
                         help='temperature parameter')
     parser.add_argument('--automatic_entropy_tuning', type=bool,
-                        default=False, metavar='G',
+                        default=True, metavar='G',
                         help='if automaticaly adjust the temperature')
     parser.add_argument('--seed', type=int, default=42, metavar='N',
                         help='random seed (default: 42)')

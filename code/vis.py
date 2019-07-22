@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def plot_return_history(mean_history, std_history, save_path, interval=10):
+def plot_return_history(
+        mean_history, std_history, save_path, title, interval=10):
     # x axis
     x = np.arange(interval, len(mean_history)*interval+1, interval)
     tag = ['', ' (thousand)', ' (million)']
@@ -16,7 +17,7 @@ def plot_return_history(mean_history, std_history, save_path, interval=10):
 
     # plot
     plt.figure()
-    plt.title(f"Return history")
+    plt.title(title)
     plt.grid()
     plt.fill_between(
         x, mean_history - std_history, mean_history + std_history,
