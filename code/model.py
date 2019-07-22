@@ -71,7 +71,7 @@ class QNetwork(nn.Module):
 class GaussianPolicy(nn.Module):
     """ Gaussian policy with reparameterization tricks. """
 
-    def __init__(self, num_inputs, num_actions, hidden_dim):
+    def __init__(self, num_inputs, num_actions, hidden_dim, action_space=None):
         super(GaussianPolicy, self).__init__()
 
         # dense layers
@@ -84,6 +84,14 @@ class GaussianPolicy(nn.Module):
         # last layer to the log(std) of gaussian
         self.log_std_linear = nn.Linear(
             hidden_dim, num_actions).apply(weights_init_xavier)
+
+        # action rescaling
+        if action_space is None:
+            self.action_scale = 1.
+            self.action_bias = 0.
+        else:
+            self.action_scale = (action_space.high - action_space.low) / 2.
+            self.action_bias = (action_space.high + action_space.low) / 2.
 
     def forward(self, state):
         # pass forward
@@ -108,10 +116,10 @@ class GaussianPolicy(nn.Module):
         # sample with reparameterization tricks
         x_t = normal.rsample()
         # action
-        action = torch.tanh(x_t)
+        action = torch.tanh(x_t) * self.action_scale + self.action_bias
         # log likelihood
         log_prob = normal.log_prob(x_t)\
-            - torch.log(1 - action.pow(2) + epsilon)
+            - torch.log(self.action_scale * (1 - action.pow(2)) + epsilon)
         # sum through all actions
         log_prob = log_prob.sum(1, keepdim=True)
 
