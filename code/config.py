@@ -12,7 +12,7 @@ def get_config():
                         help='if render or not')
     parser.add_argument('--eval_per_steps', type=int, default=10000,
                         help='evaluate per steps')
-    parser.add_argument('--gamma', type=float, default=0.95, metavar='G',
+    parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                         help='discount factor for the reward')
     parser.add_argument('--tau', type=float, default=0.005, metavar='G',
                         help='target smoothing coefficient')
@@ -27,7 +27,7 @@ def get_config():
                         help='random seed (default: 42)')
     parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                         help='batch size')
-    parser.add_argument('--num_steps', type=int, default=10000000, metavar='N',
+    parser.add_argument('--num_steps', type=int, default=3000000, metavar='N',
                         help='maximum number of steps')
     parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
                         help='hidden size')
@@ -37,7 +37,7 @@ def get_config():
                         help='steps sampling random actions')
     parser.add_argument('--target_update_interval', type=int, default=1,
                         metavar='N', help='value target updates per steps')
-    parser.add_argument('--replay_size', type=int, default=100000, metavar='N',
+    parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                         help='size of replay buffer')
     parser.add_argument('--cuda', action="store_true",
                         help='if use gpu')
