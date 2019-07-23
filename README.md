@@ -15,19 +15,24 @@ To do this, I really reffered to some implementations.
 To train the SAC agent, execute the command like this.
 ```
 # Hopper-v2
-python code/main.py --env_name Hopper-v2 --automatic_entropy_tuning True --num_steps 1000000 --cuda
+python code/main.py --env_name Hopper-v2 \
+--automatic_entropy_tuning True --num_steps 1000000 --cuda
 
 # Walker2d-v2
-python code/main.py --env_name Walker2d-v2 --automatic_entropy_tuning True --num_steps 3000000 --cuda
+python code/main.py --env_name Walker2d-v2 \
+--automatic_entropy_tuning True --num_steps 3000000 --cuda
 
 # HalfCheetah-v2
-python code/main.py --env_name HalfCheetah-v2 --automatic_entropy_tuning True --num_steps 3000000 --cuda
+python code/main.py --env_name HalfCheetah-v2 \
+--automatic_entropy_tuning True --num_steps 3000000 --cuda
 
 # Ant-v2
-python code/main.py --env_name Ant-v2 --automatic_entropy_tuning True --num_steps 3000000 --cuda
+python code/main.py --env_name Ant-v2 \
+--automatic_entropy_tuning True --num_steps 3000000 --cuda
 
 # Humanoid-v2
-python code/main.py --env_name Humanoid-v2 --automatic_entropy_tuning True --alpha 0.05 --num_steps 10000000 --cuda
+python code/main.py --env_name Humanoid-v2 \
+--automatic_entropy_tuning True --alpha 0.05 --num_steps 10000000 --cuda
 ```
 
 To test the trained agent, execute the command like this.
