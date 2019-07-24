@@ -33,7 +33,7 @@ def get_config():
                         help='hidden size')
     parser.add_argument('--updates_per_step', type=int, default=1,
                         metavar='N', help='model updates per simulator step')
-    parser.add_argument('--start_steps', type=int, default=100000, metavar='N',
+    parser.add_argument('--start_steps', type=int, default=10000, metavar='N',
                         help='steps sampling random actions')
     parser.add_argument('--target_update_interval', type=int, default=1,
                         metavar='N', help='value target updates per steps')
