@@ -117,15 +117,16 @@ class GaussianPolicy(nn.Module):
         normal = Normal(mean, std)
         # sample with reparameterization tricks
         x_t = normal.rsample()
+        y_t = torch.tanh(x_t)
         # action
-        action = torch.tanh(x_t) * self.action_scale + self.action_bias
+        action = y_t * self.action_scale + self.action_bias
         # log likelihood
         log_prob = normal.log_prob(x_t)\
-            - torch.log(self.action_scale * (1 - action.pow(2)) + epsilon)
+            - torch.log(self.action_scale * (1 - y_t.pow(2)) + epsilon)
         # sum through all actions
         log_prob = log_prob.sum(1, keepdim=True)
 
-        return action, log_prob, torch.tanh(mean)
+        return action, log_prob, self.action_scale * torch.tanh(mean)
 
     def save(self, path):
         torch.save(self.state_dict(), path)
