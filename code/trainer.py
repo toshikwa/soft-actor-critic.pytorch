@@ -6,6 +6,7 @@ import gym
 import torch
 from tensorboardX import SummaryWriter
 
+from observer import Observer
 from sac import SAC
 from memory import ReplayMemory
 from vis import plot_return_history
@@ -19,7 +20,7 @@ class Trainer():
 
     def __init__(self, args):
         # environment
-        self.env = gym.make(args.env_name)
+        self.env = Observer(gym.make(args.env_name))
 
         # seed
         torch.manual_seed(args.seed)
