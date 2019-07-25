@@ -127,16 +127,17 @@ class Trainer():
         # evaluate
         episodes = 10
         returns = np.zeros((episodes,), dtype=np.float)
+        env = gym.make(self.args.env_name)
 
         for i in range(episodes):
-            state = self.env.reset()
+            state = env.reset()
             episode_reward = 0.
             done = False
             while not done:
                 if self.args.vis:
-                    self.env.render()
+                    env.render()
                 action = self.agent.select_action(state, eval=True)
-                next_state, reward, done, _ = self.env.step(action)
+                next_state, reward, done, _ = env.step(action)
                 episode_reward += reward
                 state = next_state
 
