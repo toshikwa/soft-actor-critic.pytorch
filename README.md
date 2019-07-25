@@ -12,9 +12,9 @@ To do this, I really refered to some implementations.
 - Install `mujoco_py` following instructions [here](https://github.com/openai/mujoco-py). (You need a license)
 
 ## Training
-For training details, please refer to [the original paper](https://arxiv.org/pdf/1812.05905.pdf). I tested SAC agents only with learned temperature, which corresponds to blue lines of Figure 1 in the paper. Note that I plotted results with standard deviations of 10 seeds, although Figure 1 in the paper is with min/max of 10 seeds.
+For training details, please refer to [the original paper](https://arxiv.org/pdf/1812.05905.pdf). I tested SAC agents only with learned temperature, which corresponds to blue lines of Figure 1 in the paper.
 
-### Hopper-v2
+#### Hopper-v2
 
 Train 1000000 steps with learned temperature.
 
@@ -23,7 +23,7 @@ python code/main.py --env_name Hopper-v2 \
 --automatic_entropy_tuning True --num_steps 1000000 --cuda
 ```
 
-### Walker-v2
+#### Walker-v2
 
 Train 3000000 steps with learned temperature.
 
@@ -32,7 +32,7 @@ python code/main.py --env_name Walker2d-v2 \
 --automatic_entropy_tuning True --num_steps 3000000 --cuda
 ```
 
-### HalfCheetah-v2
+#### HalfCheetah-v2
 
 Train 3000000 steps with learned temperature.
 
@@ -41,7 +41,7 @@ python code/main.py --env_name HalfCheetah-v2 \
 --automatic_entropy_tuning True --num_steps 3000000 --cuda
 ```
 
-### Ant-v2
+#### Ant-v2
 
 Train 3000000 steps with learned temperature.
 
@@ -50,7 +50,7 @@ python code/main.py --env_name Ant-v2 \
 --automatic_entropy_tuning True --num_steps 3000000 --cuda
 ```
 
-### Humanoid-v2(MuJoCo)
+#### Humanoid-v2(MuJoCo)
 
 ```bash
 python code/main.py --env_name Humanoid-v2 \
@@ -61,7 +61,7 @@ python code/main.py --env_name Humanoid-v2 \
 
 ## Results
 
-Results will be like this. (I haven't tested all environments.)
+Results will be like this. (I haven't tested all environments.) Note that I plotted results with standard deviations of 10 seeds, although Figure 1 in the paper is with min/max of 10 seeds.
 
 ![halfcheetah.png](https://github.com/ku2482/soft-actor-critic.pytorch/blob/result/results/halfcheetah.png)
 
