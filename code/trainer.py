@@ -162,9 +162,11 @@ class Trainer():
             self.mean_return_history, mean_return)
         self.std_return_history = np.append(
             self.std_return_history, std_return)
-        np.save(os.path.join(self.logdir, 'mean_return_history.npy'),\
+        np.save(
+            os.path.join(self.logdir, 'mean_return_history.npy'),
             self.mean_return_history)
-        np.save(os.path.join(self.logdir, 'std_return_history.npy'),\
+        np.save(
+            os.path.join(self.logdir, 'std_return_history.npy'),
             self.std_return_history)
 
         # plot

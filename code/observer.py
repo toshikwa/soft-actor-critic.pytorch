@@ -7,14 +7,14 @@ class Observer():
         self._env = env
         if np.inf in np.r_[
                 self.observation_space.high, self.observation_space.low]:
+            self.state_scale = 1.0
+            self.state_bias = 0.0
+        else:
             self.state_scale =\
                 2. / (self.observation_space.high-self.observation_space.low)
             self.state_bias =\
                 - (self.observation_space.high+self.observation_space.low)\
                 / (self.observation_space.high-self.observation_space.low)
-        else:
-            self.state_scale = 1.0
-            self.state_bias = 0.0
 
     @property
     def action_space(self):
@@ -40,3 +40,9 @@ class Observer():
 
     def preprocess(self, state):
         return state * self.state_scale + self.state_bias
+
+    def seed(self, seed):
+        self._env.seed(seed)
+
+    def close(self):
+        self._env.close()

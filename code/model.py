@@ -32,17 +32,17 @@ class QNetwork(nn.Module):
 
         # Q1
         self.linear1 = nn.Linear(
-            num_inputs + num_actions, hidden_dim).apply(weights_init_he)
+            num_inputs + num_actions, hidden_dim).apply(weights_init_xavier)
         self.linear2 = nn.Linear(
-            hidden_dim, hidden_dim).apply(weights_init_he)
+            hidden_dim, hidden_dim).apply(weights_init_xavier)
         self.linear3 = nn.Linear(
             hidden_dim, 1).apply(weights_init_xavier)
 
         # Q2
         self.linear4 = nn.Linear(
-            num_inputs + num_actions, hidden_dim).apply(weights_init_he)
+            num_inputs + num_actions, hidden_dim).apply(weights_init_xavier)
         self.linear5 = nn.Linear(
-            hidden_dim, hidden_dim).apply(weights_init_he)
+            hidden_dim, hidden_dim).apply(weights_init_xavier)
         self.linear6 = nn.Linear(
             hidden_dim, 1).apply(weights_init_xavier)
 
@@ -75,8 +75,8 @@ class GaussianPolicy(nn.Module):
         super(GaussianPolicy, self).__init__()
 
         # dense layers
-        self.linear1 = nn.Linear(num_inputs, hidden_dim).apply(weights_init_he)
-        self.linear2 = nn.Linear(hidden_dim, hidden_dim).apply(weights_init_he)
+        self.linear1 = nn.Linear(num_inputs, hidden_dim).apply(weights_init_xavier)
+        self.linear2 = nn.Linear(hidden_dim, hidden_dim).apply(weights_init_xavier)
 
         # last layer to the mean of gaussian
         self.mean_linear = nn.Linear(
