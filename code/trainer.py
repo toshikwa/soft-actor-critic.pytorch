@@ -2,6 +2,7 @@ import os
 import datetime
 import itertools
 import numpy as np
+import time
 import gym
 import torch
 from tensorboardX import SummaryWriter
@@ -80,6 +81,7 @@ class Trainer():
                 self.updates += 1
 
     def train_episode(self, episode):
+        start = time.time()
         # rewards
         episode_reward = 0
         # steps
@@ -117,12 +119,14 @@ class Trainer():
             if self.total_numsteps % self.args.eval_per_steps == 0:
                 self.evaluate()
 
+        t = time.time() - start
         self.writer.add_scalar('reward/train', episode_reward, episode)
-        print(f"Episode: {episode}, "
-              f"total numsteps: {self.total_numsteps}, "
-              f"episode steps: {episode_steps}, "
-              f"total updates: {self.updates}, "
-              f"reward: {round(episode_reward, 2)}")
+        print(f"Episode: {episode:<4}, "
+              f"total numsteps: {self.total_numsteps:<4}, "
+              f"episode steps: {episode_steps:<4}, "
+              f"total updates: {self.updates:<4}, "
+              f"reward: {episode_reward:< 4.2f}, "
+              f"time: {t:< .2f}")
 
     def evaluate(self):
         # evaluate
