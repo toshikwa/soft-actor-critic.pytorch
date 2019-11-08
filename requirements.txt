@@ -1,6 +1,5 @@
 numpy
-matplotlib
-seaborn
-gym
 torch
-tensorboardx
+gym
+tensorboard
+git+https://github.com/ku2482/rltorch

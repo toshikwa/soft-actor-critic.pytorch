@@ -1,66 +1,10 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.distributions import Normal
-
-LOG_STD_MAX = 2
-LOG_STD_MIN = -20
-epsilon = 1e-6
+from rltorch.network import create_linear_network
 
 
-def weights_init_xavier(m):
-    """ Initialize weights with Xavier's initializer. """
-    if isinstance(m, nn.Linear):
-        torch.nn.init.xavier_uniform_(m.weight, gain=1)
-        if m.bias is not None:
-            torch.nn.init.constant_(m.bias, 0)
-
-
-def weights_init_he(m):
-    """ Initialize weights with He's initializer. """
-    if isinstance(m, nn.Linear):
-        torch.nn.init.kaiming_uniform_(m.weight)
-        if m.bias is not None:
-            torch.nn.init.constant_(m.bias, 0)
-
-
-class QNetwork(nn.Module):
-    """ Pairs of two Q-networks. """
-
-    def __init__(self, num_inputs, num_actions, hidden_dim):
-        super(QNetwork, self).__init__()
-
-        # Q1
-        self.linear1 = nn.Linear(
-            num_inputs + num_actions, hidden_dim).apply(weights_init_xavier)
-        self.linear2 = nn.Linear(
-            hidden_dim, hidden_dim).apply(weights_init_xavier)
-        self.linear3 = nn.Linear(
-            hidden_dim, 1).apply(weights_init_xavier)
-
-        # Q2
-        self.linear4 = nn.Linear(
-            num_inputs + num_actions, hidden_dim).apply(weights_init_xavier)
-        self.linear5 = nn.Linear(
-            hidden_dim, hidden_dim).apply(weights_init_xavier)
-        self.linear6 = nn.Linear(
-            hidden_dim, 1).apply(weights_init_xavier)
-
-    def forward(self, state, action):
-        # state-action pair
-        xu = torch.cat([state, action], 1)
-
-        # pass forward
-        x1 = F.relu(self.linear1(xu))
-        x1 = F.relu(self.linear2(x1))
-        x1 = self.linear3(x1)
-
-        x2 = F.relu(self.linear4(xu))
-        x2 = F.relu(self.linear5(x2))
-        x2 = self.linear6(x2)
-
-        return x1, x2
-
+class BaseNetwork(nn.Module):
     def save(self, path):
         torch.save(self.state_dict(), path)
 
@@ -68,73 +12,68 @@ class QNetwork(nn.Module):
         self.load_state_dict(torch.load(path))
 
 
-class GaussianPolicy(nn.Module):
-    """ Gaussian policy with reparameterization tricks. """
+class QNetwork(BaseNetwork):
+    def __init__(self, num_inputs, num_actions, hidden_units=[256, 256],
+                 initializer='xavier'):
+        super(QNetwork, self).__init__()
 
-    def __init__(self, num_inputs, num_actions, hidden_dim, action_space=None):
+        self.Q = create_linear_network(
+            num_inputs+num_actions, 1, hidden_units=hidden_units,
+            initializer=initializer)
+
+    def forward(self, x):
+        q = self.Q(x)
+        return q
+
+
+class TwinnedQNetwork(BaseNetwork):
+
+    def __init__(self, num_inputs, num_actions, hidden_units=[256, 256],
+                 initializer='xavier'):
+        super(TwinnedQNetwork, self).__init__()
+
+        self.Q1 = QNetwork(
+            num_inputs, num_actions, hidden_units, initializer)
+        self.Q2 = QNetwork(
+            num_inputs, num_actions, hidden_units, initializer)
+
+    def forward(self, states, actions):
+        x = torch.cat([states, actions], dim=1)
+        q1 = self.Q1(x)
+        q2 = self.Q2(x)
+        return q1, q2
+
+
+class GaussianPolicy(BaseNetwork):
+    LOG_STD_MAX = 2
+    LOG_STD_MIN = -20
+    eps = 1e-6
+
+    def __init__(self, num_inputs, num_actions, hidden_units=[256, 256],
+                 initializer='xavier'):
         super(GaussianPolicy, self).__init__()
 
-        # dense layers
-        self.linear1 = nn.Linear(num_inputs, hidden_dim).apply(weights_init_xavier)
-        self.linear2 = nn.Linear(hidden_dim, hidden_dim).apply(weights_init_xavier)
+        self.policy = create_linear_network(
+            num_inputs, num_actions*2, hidden_units=hidden_units,
+            initializer=initializer)
 
-        # last layer to the mean of gaussian
-        self.mean_linear = nn.Linear(
-            hidden_dim, num_actions).apply(weights_init_xavier)
-        # last layer to the log(std) of gaussian
-        self.log_std_linear = nn.Linear(
-            hidden_dim, num_actions).apply(weights_init_xavier)
-
-        # action rescaling
-        if action_space is None:
-            self.action_scale = 1.
-            self.action_bias = 0.
-        else:
-            self.action_scale = torch.FloatTensor(
-                (action_space.high - action_space.low) / 2.)
-            self.action_bias = torch.FloatTensor(
-                (action_space.high + action_space.low) / 2.)
-
-    def forward(self, state):
-        # pass forward
-        x = F.relu(self.linear1(state))
-        x = F.relu(self.linear2(x))
-        # mean of gaussian
-        mean = self.mean_linear(x)
-        # log(std) of gaussian
-        log_std = self.log_std_linear(x)
-        # clip the log(std)
-        log_std = torch.clamp(log_std, min=LOG_STD_MIN, max=LOG_STD_MAX)
+    def forward(self, states):
+        mean, log_std = torch.chunk(self.policy(states), 2, dim=-1)
+        log_std = torch.clamp(
+            log_std, min=self.LOG_STD_MIN, max=self.LOG_STD_MAX)
 
         return mean, log_std
 
-    def sample(self, state):
-        # mean, log(std)
-        mean, log_std = self.forward(state)
-        # std
+    def sample(self, states):
+        mean, log_std = self.forward(states)
         std = log_std.exp()
-        # gaussian distribution
+
         normal = Normal(mean, std)
-        # sample with reparameterization tricks
         x_t = normal.rsample()
-        y_t = torch.tanh(x_t)
-        # action
-        action = y_t * self.action_scale + self.action_bias
-        # log likelihood
+        action = torch.tanh(x_t)
+
         log_prob = normal.log_prob(x_t)\
-            - torch.log(self.action_scale * (1 - y_t.pow(2)) + epsilon)
-        # sum through all actions
-        log_prob = log_prob.sum(1, keepdim=True)
+            - torch.log(1 - action.pow(2) + self.eps)
+        entropy = -log_prob.sum(1, keepdim=True)
 
-        return action, log_prob, self.action_scale * torch.tanh(mean)
-
-    def save(self, path):
-        torch.save(self.state_dict(), path)
-
-    def load(self, path):
-        self.load_state_dict(torch.load(path))
-
-    def to(self, device):
-        self.action_scale = self.action_scale.to(device)
-        self.action_bias = self.action_bias.to(device)
-        return super(GaussianPolicy, self).to(device)
+        return action, entropy, torch.tanh(mean)
