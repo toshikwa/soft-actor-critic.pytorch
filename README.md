@@ -9,7 +9,7 @@ You can install liblaries using `pip install -r requirements.txt` except `mujoco
 Note that you need a licence to install `mujoco_py`. For installation, please follow instructions [here](https://github.com/openai/mujoco-py).
 
 ## Examples
-You can train Soft Actor-Critic agent like this example [here](https://github.com/ku2482/soft-actor-critic.pytorch/blob/rltorch/code/main.py).
+You can train Soft Actor-Critic agent like this example [here](https://github.com/ku2482/soft-actor-critic.pytorch/blob/master/code/main.py).
 
 ```
 python code/main.py \
