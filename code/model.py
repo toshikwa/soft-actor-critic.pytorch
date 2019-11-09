@@ -17,6 +17,7 @@ class QNetwork(BaseNetwork):
                  initializer='xavier'):
         super(QNetwork, self).__init__()
 
+        # https://github.com/ku2482/rltorch/blob/master/rltorch/network/builder.py
         self.Q = create_linear_network(
             num_inputs+num_actions, 1, hidden_units=hidden_units,
             initializer=initializer)
@@ -53,6 +54,7 @@ class GaussianPolicy(BaseNetwork):
                  initializer='xavier'):
         super(GaussianPolicy, self).__init__()
 
+        # https://github.com/ku2482/rltorch/blob/master/rltorch/network/builder.py
         self.policy = create_linear_network(
             num_inputs, num_actions*2, hidden_units=hidden_units,
             initializer=initializer)
@@ -65,15 +67,16 @@ class GaussianPolicy(BaseNetwork):
         return mean, log_std
 
     def sample(self, states):
-        mean, log_std = self.forward(states)
-        std = log_std.exp()
+        # calculate Gaussian distribusion of (mean, std)
+        means, log_stds = self.forward(states)
+        stds = log_stds.exp()
+        normals = Normal(means, stds)
+        # sample actions
+        xs = normals.rsample()
+        actions = torch.tanh(xs)
+        # calculate entropies
+        log_probs = normals.log_prob(xs)\
+            - torch.log(1 - actions.pow(2) + self.eps)
+        entropies = -log_probs.sum(dim=1, keepdim=True)
 
-        normal = Normal(mean, std)
-        x_t = normal.rsample()
-        action = torch.tanh(x_t)
-
-        log_prob = normal.log_prob(x_t)\
-            - torch.log(1 - action.pow(2) + self.eps)
-        entropy = -log_prob.sum(1, keepdim=True)
-
-        return action, entropy, torch.tanh(mean)
+        return actions, entropies, torch.tanh(means)

@@ -40,7 +40,9 @@ class SacAgent:
             self.env.action_space.shape[0],
             hidden_units=hidden_units).to(self.device).eval()
 
+        # copy parameters of the learning network to the target network
         hard_update(self.critic_target, self.critic)
+        # disable gradient calculations of the target network
         grad_false(self.critic_target)
 
         self.policy_optim = Adam(self.policy.parameters(), lr=lr)
@@ -48,21 +50,28 @@ class SacAgent:
         self.q2_optim = Adam(self.critic.Q2.parameters(), lr=lr)
 
         if entropy_tuning:
+            # Target entropy is -|A|.
             self.target_entropy = -torch.prod(torch.Tensor(
                 self.env.action_space.shape).to(self.device)).item()
+            # We optimize log(alpha), instead of alpha.
             self.log_alpha = torch.zeros(
                 1, requires_grad=True, device=self.device)
             self.alpha = self.log_alpha.exp()
             self.alpha_optim = Adam([self.log_alpha], lr=lr)
         else:
+            # fixed alpha
             self.alpha = torch.tensor(ent_coef).to(self.device)
 
         if per:
+            # replay memory with prioritied experience replay
+            # See https://github.com/ku2482/rltorch/blob/master/rltorch/memory
             self.memory = PrioritizedMemory(
                 memory_size, self.env.observation_space.shape,
                 self.env.action_space.shape, self.device, gamma, multi_step,
                 alpha=alpha, beta=beta, beta_annealing=beta_annealing)
         else:
+            # replay memory without prioritied experience replay
+            # See https://github.com/ku2482/rltorch/blob/master/rltorch/memory
             self.memory = MultiStepMemory(
                 memory_size, self.env.observation_space.shape,
                 self.env.action_space.shape, self.device, gamma, multi_step)
@@ -112,12 +121,14 @@ class SacAgent:
         return action
 
     def explore(self, state):
+        # act with randomness
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         with torch.no_grad():
             action, _, _ = self.policy.sample(state)
         return action.cpu().numpy().reshape(-1)
 
     def exploit(self, state):
+        # act without randomness
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         with torch.no_grad():
             _, _, action = self.policy.sample(state)
@@ -151,6 +162,8 @@ class SacAgent:
             episode_steps += 1
             episode_reward += reward
 
+            # ignore done if the agent reach time horizons
+            # (set done=True only when the agent fails)
             if episode_steps >= self.env._max_episode_steps:
                 masked_done = False
             else:
@@ -164,10 +177,14 @@ class SacAgent:
                     curr_q1, curr_q2 = self.calc_current_q(*batch)
                 target_q = self.calc_target_q(*batch)
                 error = torch.abs(curr_q1 - target_q).item()
+                # We need to give true done signal with addition to masked done
+                # signal to calculate multi-step rewards.
                 self.memory.append(
                     state, action, reward, next_state, masked_done, error,
                     episode_done=done)
             else:
+                # We need to give true done signal with addition to masked done
+                # signal to calculate multi-step rewards.
                 self.memory.append(
                     state, action, reward, next_state, masked_done,
                     episode_done=done)
@@ -181,6 +198,7 @@ class SacAgent:
 
             state = next_state
 
+        # We log running mean of training rewards.
         self.train_rewards.append(episode_reward)
 
         if self.episodes % self.log_interval == 0:
@@ -197,10 +215,12 @@ class SacAgent:
             soft_update(self.critic_target, self.critic, self.tau)
 
         if self.per:
+            # batch with indices and priority weights
             batch, indices, weights = \
                 self.memory.sample(self.batch_size)
         else:
             batch = self.memory.sample(self.batch_size)
+            # set priority weights to 1 when we don't use PER.
             weights = 1.
 
         q1_loss, q2_loss, errors, mean_q1, mean_q2 =\
@@ -222,6 +242,7 @@ class SacAgent:
                 'loss/alpha', entropy_loss.detach().item(), self.steps)
 
         if self.per:
+            # update priority weights
             self.memory.update_priority(indices, errors.cpu().numpy())
 
         self.writer.add_scalar(
@@ -243,23 +264,34 @@ class SacAgent:
         curr_q1, curr_q2 = self.calc_current_q(*batch)
         target_q = self.calc_target_q(*batch)
 
+        # TD errors for updating priority weights
         errors = torch.abs(curr_q1.detach() - target_q)
+        # We log means of Q to monitor training.
         mean_q1 = curr_q1.detach().mean().item()
         mean_q2 = curr_q2.detach().mean().item()
 
+        # Critic loss is mean squared TD errors with priority weights.
         q1_loss = torch.mean((curr_q1 - target_q).pow(2) * weights)
         q2_loss = torch.mean((curr_q2 - target_q).pow(2) * weights)
         return q1_loss, q2_loss, errors, mean_q1, mean_q2
 
     def calc_policy_loss(self, batch, weights):
         states, actions, rewards, next_states, dones = batch
+
+        # We re-sample actions to calculate expectations of Q.
         sampled_action, entropy, _ = self.policy.sample(states)
+        # expectations of Q with clipped double Q technique
         q1, q2 = self.critic(states, sampled_action)
         q = torch.min(q1, q2)
+
+        # Policy objective is maximization of (Q + alpha * entropy) with
+        # priority weights.
         policy_loss = torch.mean((- q - self.alpha * entropy) * weights)
         return policy_loss, entropy
 
     def calc_entropy_loss(self, entropy, weights):
+        # Intuitively, we increse alpha when entropy is less than target
+        # entropy, vice versa.
         entropy_loss = -torch.mean(
             self.log_alpha * (self.target_entropy - entropy).detach()
             * weights)
