@@ -1,5 +1,6 @@
 # Soft Actor-Critic in PyTorch
 A PyTorch implementation of Soft Actor-Critic[[1,2]](#references) with n-step rewards and prioritized experience replayc[[3]](#references).
+
 If you want to train a distributed version of Soft Actor-Critic, please reffer to [rltorch](https://github.com/ku2482/rltorch) repository.
 
 
@@ -22,9 +23,9 @@ If you want to use n-step rewards and prioritized experience replay, set `multi_
 
 ## Results
 
-Results will be like this. (I haven't tested all environments.) Note that I plotted results with standard deviations of 10 seeds, although Figure 1 in the paper is with min/max of 10 seeds.
+Result of above example (without n-step rewards nor prioritized experience replay) will be like this, which is comparable (or better) with results of the paper.
 
-![halfcheetah](https://user-images.githubusercontent.com/37267851/68479002-9c4d6080-0274-11ea-9707-e6a297012428.png)
+![data](https://user-images.githubusercontent.com/37267851/68531052-a98c4d00-0351-11ea-8de0-49c392435342.png)
 
 ## References
 [[1]](https://arxiv.org/abs/1801.01290) Haarnoja, Tuomas, et al. "Soft actor-critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor." arXiv preprint arXiv:1801.01290 (2018).
