@@ -28,7 +28,7 @@ def run():
         'per': False,  # prioritized experience replay
         'alpha': 0.6,  # It's ignored when per=False.
         'beta': 0.4,  # It's ignored when per=False.
-        'beta_annealing': 0.001,  # It's ignored when per=False.
+        'beta_annealing': 0.0001,  # It's ignored when per=False.
         'grad_clip': None,
         'updates_per_step': 1,
         'start_steps': 10000,
@@ -43,7 +43,7 @@ def run():
 
     log_dir = os.path.join(
         'logs', args.env_id,
-        f'rainbow-{datetime.now().strftime("%Y%m%d-%H%M")}')
+        f'sac-{datetime.now().strftime("%Y%m%d-%H%M")}')
 
     agent = SacAgent(env=env, log_dir=log_dir, **configs)
     agent.run()

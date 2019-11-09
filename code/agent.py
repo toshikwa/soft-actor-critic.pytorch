@@ -16,7 +16,7 @@ class SacAgent:
                  lr=0.0003, hidden_units=[256, 256], memory_size=1e6,
                  gamma=0.99, tau=0.005, entropy_tuning=True, ent_coef=0.2,
                  multi_step=1, per=False, alpha=0.6, beta=0.4,
-                 beta_annealing=0.001, grad_clip=None, updates_per_step=1,
+                 beta_annealing=0.0001, grad_clip=None, updates_per_step=1,
                  start_steps=10000, log_interval=10, target_update_interval=1,
                  eval_interval=1000, cuda=True, seed=0):
         self.env = env
@@ -38,7 +38,7 @@ class SacAgent:
         self.critic_target = TwinnedQNetwork(
             self.env.observation_space.shape[0],
             self.env.action_space.shape[0],
-            hidden_units=hidden_units).to(self.device)
+            hidden_units=hidden_units).to(self.device).eval()
 
         hard_update(self.critic_target, self.critic)
         grad_false(self.critic_target)
@@ -47,7 +47,7 @@ class SacAgent:
         self.q1_optim = Adam(self.critic.Q1.parameters(), lr=lr)
         self.q2_optim = Adam(self.critic.Q2.parameters(), lr=lr)
 
-        if entropy_tuning is True:
+        if entropy_tuning:
             self.target_entropy = -torch.prod(torch.Tensor(
                 self.env.action_space.shape).to(self.device)).item()
             self.log_alpha = torch.zeros(
@@ -101,7 +101,8 @@ class SacAgent:
                 break
 
     def is_update(self):
-        return len(self.memory) > self.batch_size
+        return len(self.memory) > self.batch_size and\
+            self.steps >= self.start_steps
 
     def act(self, state):
         if self.start_steps > self.steps:
