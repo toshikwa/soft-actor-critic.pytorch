@@ -195,6 +195,7 @@ class SacAgent:
 
             if self.steps % self.eval_interval == 0:
                 self.evaluate()
+                self.save_models()
 
             state = next_state
 
@@ -245,20 +246,26 @@ class SacAgent:
             # update priority weights
             self.memory.update_priority(indices, errors.cpu().numpy())
 
-        self.writer.add_scalar(
-            'loss/Q1', q1_loss.detach().item(), self.steps)
-        self.writer.add_scalar(
-            'loss/Q2', q2_loss.detach().item(), self.steps)
-        self.writer.add_scalar(
-            'loss/policy', policy_loss.detach().item(), self.steps)
-        self.writer.add_scalar(
-            'stats/alpha', self.alpha.detach().item(), self.steps)
-        self.writer.add_scalar(
-            'stats/mean_Q1', mean_q1, self.steps)
-        self.writer.add_scalar(
-            'stats/mean_Q2', mean_q2, self.steps)
-        self.writer.add_scalar(
-            'stats/entropy', entropies.detach().mean().item(), self.steps)
+        if self.learning_steps % self.log_interval == 0:
+            self.writer.add_scalar(
+                'loss/Q1', q1_loss.detach().item(),
+                self.learning_steps)
+            self.writer.add_scalar(
+                'loss/Q2', q2_loss.detach().item(),
+                self.learning_steps)
+            self.writer.add_scalar(
+                'loss/policy', policy_loss.detach().item(),
+                self.learning_steps)
+            self.writer.add_scalar(
+                'stats/alpha', self.alpha.detach().item(),
+                self.learning_steps)
+            self.writer.add_scalar(
+                'stats/mean_Q1', mean_q1, self.learning_steps)
+            self.writer.add_scalar(
+                'stats/mean_Q2', mean_q2, self.learning_steps)
+            self.writer.add_scalar(
+                'stats/entropy', entropies.detach().mean().item(),
+                self.learning_steps)
 
     def calc_critic_loss(self, batch, weights):
         curr_q1, curr_q2 = self.calc_current_q(*batch)
@@ -320,6 +327,12 @@ class SacAgent:
         print(f'Num steps: {self.steps:<5}  '
               f'reward: {mean_return:<5.1f}')
         print('-' * 60)
+
+    def save_models(self):
+        self.policy.save(os.path.join(self.model_dir, 'policy.pth'))
+        self.critic.save(os.path.join(self.model_dir, 'critic.pth'))
+        self.critic_target.save(
+            os.path.join(self.model_dir, 'critic_target.pth'))
 
     def __del__(self):
         self.writer.close()
