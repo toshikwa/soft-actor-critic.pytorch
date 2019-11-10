@@ -43,7 +43,7 @@ def run():
 
     log_dir = os.path.join(
         'logs', args.env_id,
-        f'sac-{datetime.now().strftime("%Y%m%d-%H%M")}')
+        f'sac-seed{args.seed}-{datetime.now().strftime("%Y%m%d-%H%M")}')
 
     agent = SacAgent(env=env, log_dir=log_dir, **configs)
     agent.run()

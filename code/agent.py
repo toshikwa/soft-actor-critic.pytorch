@@ -20,9 +20,12 @@ class SacAgent:
                  start_steps=10000, log_interval=10, target_update_interval=1,
                  eval_interval=1000, cuda=True, seed=0):
         self.env = env
+
         torch.manual_seed(seed)
         np.random.seed(seed)
         self.env.seed(seed)
+        torch.backends.cudnn.deterministic = True  # It harms a performance.
+        torch.backends.cudnn.benchmark = False
 
         self.device = torch.device(
             "cuda" if cuda and torch.cuda.is_available() else "cpu")
