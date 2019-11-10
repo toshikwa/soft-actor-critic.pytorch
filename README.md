@@ -27,6 +27,8 @@ Result of above example (without n-step rewards nor prioritized experience repla
 
 ![data](https://user-images.githubusercontent.com/37267851/68531052-a98c4d00-0351-11ea-8de0-49c392435342.png)
 
+![data](https://user-images.githubusercontent.com/37267851/68543993-a5b80380-0401-11ea-8201-02cebc837854.png)
+
 ## References
 [[1]](https://arxiv.org/abs/1801.01290) Haarnoja, Tuomas, et al. "Soft actor-critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor." arXiv preprint arXiv:1801.01290 (2018).
 
