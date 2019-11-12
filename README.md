@@ -23,11 +23,12 @@ If you want to use n-step rewards and prioritized experience replay, set `multi_
 
 ## Results
 
-Result of above example (without n-step rewards nor prioritized experience replay) will be like this, which is comparable (or better) with results of the paper.
+Results of above example (without n-step rewards nor prioritized experience replay) will be like below, which are comparable (or better) with results of the paper.
 
-![data](https://user-images.githubusercontent.com/37267851/68531052-a98c4d00-0351-11ea-8de0-49c392435342.png)
+<img src="https://user-images.githubusercontent.com/37267851/68636404-b752f580-053e-11ea-8e7a-9d631ab88868.png" title="cheetah" width=400><img src="https://user-images.githubusercontent.com/37267851/68636405-b7eb8c00-053e-11ea-9655-8bca41a3988f.png" title="walker" width=400>
 
-![data](https://user-images.githubusercontent.com/37267851/68543993-a5b80380-0401-11ea-8201-02cebc837854.png)
+<img src="https://user-images.githubusercontent.com/37267851/68636406-b7eb8c00-053e-11ea-8697-333844d2e500.png" title="ant" width=400><img src="https://user-images.githubusercontent.com/37267851/68636403-b752f580-053e-11ea-89cc-1f8759908f88.png" title="humanoid" width=400>
+
 
 ## References
 [[1]](https://arxiv.org/abs/1801.01290) Haarnoja, Tuomas, et al. "Soft actor-critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor." arXiv preprint arXiv:1801.01290 (2018).
