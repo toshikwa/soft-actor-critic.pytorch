@@ -1,7 +1,9 @@
 # Soft Actor-Critic in PyTorch
 A PyTorch implementation of Soft Actor-Critic[[1,2]](#references) with n-step rewards and prioritized experience replay[[3]](#references).
 
-If you want to train a distributed version of Soft Actor-Critic, please reffer to [rltorch](https://github.com/ku2482/rltorch) repository.
+**NOTE**
+
+I re-implemented Soft Actor-Critic in [discor.pytorch](https://github.com/ku2482/discor.pytorch) repositry, which is better organized and faster, with DisCor algorithm. Please check it out!!
 
 
 ## Requirements
